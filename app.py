@@ -5,7 +5,7 @@ import hashlib
 # Configuração da página do Streamlit
 st.set_page_config(
     page_title="Dragon-Hot — Acesso ao Sistema",
-    page_icon="🌭",
+    page_icon="imagens/logo_dragon.png.png",
     layout="centered"
 )
 
@@ -32,9 +32,11 @@ if "usuario_logado" not in st.session_state:
 
 # Se não estiver logado, exibe a Tela de Login (RF1.1)
 if st.session_state.usuario_logado is None:
-    st.markdown("<h1 style='text-align: center;'>🌭 Dragon-Hot</h1>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1,1,1])
+    with col2:
+        st.image("imagens/logo_dragon.png.png", use_container_width=True)
+
     st.markdown("<h3 style='text-align: center; color: gray;'>Acesso ao Sistema Interno</h3>", unsafe_allow_html=True)
-    st.write("")
     
     # Caixa de login simulando o card do wireframe
     with st.form("form_login"):

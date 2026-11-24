@@ -20,6 +20,20 @@ def init_db():
             perfil TEXT NOT NULL
         )
     """)
+
+    # >>> NOVO: Tabela de Pedidos para a Fila da Cozinha <<<
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS pedidos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            numero_pedido TEXT NOT NULL,
+            cliente TEXT NOT NULL,
+            horario TEXT NOT NULL,
+            tipo_entrega TEXT NOT NULL,
+            itens TEXT NOT NULL,
+            observacoes TEXT,
+            status TEXT NOT NULL
+        )
+    """)
     
     # Inserir usuários padrão para teste (Gerente e Chapa) caso a tabela esteja vazia
     cursor.execute("SELECT COUNT(*) FROM usuarios")
