@@ -80,7 +80,7 @@ def garantir_pedidos_teste():
         )
     """)
 cursor.execute("SELECT COUNT(*) FROM pedidos WHERE status IN ('RECEBIDO', 'EM_PREPARO', 'PRONTO')")
-    if cursor.fetchone()[0] == 0:
+if cursor.fetchone()[0] == 0:
         pedidos_exemplo = [
             ("#103", "Lucas Araujo", "14:05", "Delivery", "1x Dog Duplo Prensado\n**SEM PURÊ DE BATATA**\n+ Extras: Cheddar", "Obs: Bem prensado", "RECEBIDO"),
             ("#105", "Luisa Prado", "15:20", "Delivery", "2x Dog Tradicional\n+ Extras: Bacon", "", "EM_PREPARO"),
@@ -91,7 +91,7 @@ cursor.execute("SELECT COUNT(*) FROM pedidos WHERE status IN ('RECEBIDO', 'EM_PR
             VALUES (?, ?, ?, ?, ?, ?, ?)
         """, pedidos_exemplo)
         conn.commit()
-    conn.close()
+conn.close()
 
 garantir_pedidos_teste()
 
