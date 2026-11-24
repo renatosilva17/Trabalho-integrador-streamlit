@@ -8,6 +8,13 @@ from PIL import Image
 if "usuario_logado" not in st.session_state:
     st.session_state.usuario_logado = None
 
+# ADICIONE ESTAS DUAS LINHAS AQUI EMBAIXO:
+if "pagina_gerente" not in st.session_state:
+    st.session_state.pagina_gerente = "Dashboard"
+
+if "pagina_chapa" not in st.session_state:
+    st.session_state.pagina_chapa = "Fila de Pedidos"
+
 # 2. Recupera o login caso a página seja recarregada (F5)
 if st.session_state.usuario_logado is None and "user" in st.query_params:
     email_salvo = st.query_params["user"]
@@ -27,7 +34,7 @@ layout_atual = "centered" if st.session_state.usuario_logado is None else "wide"
 
 st.set_page_config(
     page_title="Dragon-Hot — Acesso ao Sistema",
-    page_icon="imagens/logo_dragon.png.png",
+    page_icon="magens/logo_dragon.png.png",
     layout=layout_atual
 )
 
@@ -95,6 +102,51 @@ def garantir_pedidos_teste():
 
 garantir_pedidos_teste()
 
+def garantir_estoque_teste():
+    conn = sqlite3.connect("dragon_hot.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS insumos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            quantidade_atual REAL NOT NULL,
+            unidade TEXT NOT NULL,
+            estoque_minimo REAL NOT NULL
+        )
+    """)
+    cursor.execute("SELECT COUNT(*) FROM insumos")
+    if cursor.fetchone()[0] == 0:
+        insumos_exemplo = [
+            ("Pão de Hot Dog", 45, "UN", 20),
+            ("Salsicha Tradicional", 15, "UN", 30),
+            ("Purê de Batata", 800, "G", 1500),
+            ("Molho Cheddar", 0, "ML", 1000),
+            ("Batata Palha", 2500, "G", 1000)
+        ]
+        cursor.executemany("""
+            INSERT INTO insumos (nome, quantidade_atual, unidade, estoque_minimo)
+            VALUES (?, ?, ?, ?)
+        """, insumos_exemplo)
+        conn.commit()
+    conn.close()
+
+def buscar_insumos():
+    conn = sqlite3.connect("dragon_hot.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, nome, quantidade_atual, unidade, estoque_minimo FROM insumos ORDER BY nome ASC")
+    itens = cursor.fetchall()
+    conn.close()
+    return itens
+
+def registrar_entrada_estoque(insumo_id, qtd_adicionar):
+    conn = sqlite3.connect("dragon_hot.db")
+    cursor = conn.cursor()
+    cursor.execute("UPDATE insumos SET quantidade_atual = quantidade_atual + ? WHERE id = ?", (qtd_adicionar, insumo_id))
+    conn.commit()
+    conn.close()
+
+garantir_estoque_teste()
+
 # --- TELA DE LOGIN ---
 if st.session_state.usuario_logado is None:
     col1, col2, col3 = st.columns([1, 1, 1])
@@ -146,27 +198,96 @@ else:
     st.sidebar.caption(f"Perfil: **{perfil}**")
     st.sidebar.divider()
 
-    # ==========================================
+ 
+# ==========================================
     # PERFIL: GERENTE
     # ==========================================
     if perfil == "Gerente":
-        if st.sidebar.button("Sair da Conta", use_container_width=True):
-            st.session_state.usuario_logado = None
-            st.query_params.clear() 
-            st.rerun()
+        if "pagina_gerente" not in st.session_state:
+            st.session_state.pagina_gerente = "Dashboard"
 
-        st.title("Dashboard Gerencial")
-        st.success("Você acessou com o perfil de Gerente!")
-        st.write("Aqui ficarão os KPIs, gráficos e menus de gestão do cardápio, bairros e colaboradores.")
+        with st.sidebar:
+            if st.button("📊 Dashboard", type="primary" if st.session_state.pagina_gerente == "Dashboard" else "secondary", use_container_width=True, key="btn_gerente_dashboard"):
+                st.session_state.pagina_gerente = "Dashboard"
+                st.rerun()
+                
+            if st.button("🍔 Gestão de Cardápio", type="primary" if st.session_state.pagina_gerente == "Cardapio" else "secondary", use_container_width=True, key="btn_gerente_cardapio"):
+                st.session_state.pagina_gerente = "Cardapio"
+                st.rerun()
+                
+            if st.button("📍 Taxas de Bairros", type="primary" if st.session_state.pagina_gerente == "Bairros" else "secondary", use_container_width=True, key="btn_gerente_bairros"):
+                st.session_state.pagina_gerente = "Bairros"
+                st.rerun()
+
+            if st.button("👥 Colaboradores", type="primary" if st.session_state.pagina_gerente == "Colaboradores" else "secondary", use_container_width=True, key="btn_gerente_colaboradores"):
+                st.session_state.pagina_gerente = "Colaboradores"
+                st.rerun()
+
+            st.divider()
+            if st.button("Sair da Conta", use_container_width=True, key="btn_gerente_sair"):
+                st.session_state.usuario_logado = None
+                st.query_params.clear() 
+                st.rerun()
+
+        # --- TELA: DASHBOARD GERENCIAL ---
+            if st.session_state.pagina_gerente == "Dashboard":
+                st.title("Dashboard Gerencial")
+                st.caption("Visão geral do movimento e desempenho do Dragon-Hot")
+
+            # Exemplo de KPIs (Cards superiores)
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.metric(label="Faturamento Hoje", value="R$ 1.240,00", delta="+12%")
+            with col2:
+                st.metric(label="Total de Pedidos", value="38", delta="+5")
+            with col3:
+                st.metric(label="Ticket Médio", value="R$ 32,60", delta="-R$ 1,20")
+            with col4:
+                st.metric(label="Pedidos Cancelados", value="2", delta="-1", delta_color="inverse")
+
+            st.divider()
+
+            col_esq, col_dir = st.columns(2)
+            
+            with col_esq:
+                with st.container(border=True):
+                    st.subheader("📦 Pedidos por Status")
+                    st.write("• **Recebidos:** 3")
+                    st.write("• **Em Preparo:** 1")
+                    st.write("• **Prontos/Entregues:** 34")
+                    st.write("• **Cancelados:** 2")
+
+            with col_dir:
+                with st.container(border=True):
+                    st.subheader("🔥 Lanches Mais Vendidos")
+                    st.write("1. Dog Duplo Prensado (18 un)")
+                    st.write("2. Dog Tradicional (12 un)")
+                    st.write("3. Dog Frango Catupiry (8 un)")
+
+        # --- TELA: CARDÁPIO ---
+    elif st.session_state.pagina_gerente == "Cardapio":
+            st.subheader("Gestão de Cardápio")
+            st.info("Tela de cadastro e edição de lanches e bebidas em construção.")
+
+        # --- TELA: BAIRROS ---
+    elif st.session_state.pagina_gerente == "Bairros":
+            st.subheader("Gestão de Bairros e Taxas de Entrega")
+            st.info("Tela de taxas por bairro em construção.")
+
+        # --- TELA: COLABORADORES ---
+    elif st.session_state.pagina_gerente == "Colaboradores":
+            st.subheader("Gestão de Colaboradores")
+            st.info("Tela de cadastro de novos usuários e alteração de senhas em construção.")
 
     # ==========================================
     # PERFIL: CHAPA
     # ==========================================
     elif perfil == "Chapa":
-        if "pagina_chapa" not in st.session_state:
-            st.session_state.pagina_chapa = "Fila de Pedidos"
+            if "pagina_chapa" not in st.session_state:
+                st.session_state.pagina_chapa = "Fila de Pedidos"
 
-        with st.sidebar:
+    with st.sidebar:
             if st.button("Fila de Pedidos", type="primary" if st.session_state.pagina_chapa == "Fila de Pedidos" else "secondary", use_container_width=True):
                 st.session_state.pagina_chapa = "Fila de Pedidos"
                 st.rerun()
@@ -185,7 +306,7 @@ else:
                 st.query_params.clear()  
                 st.rerun()
 
-        if st.session_state.pagina_chapa == "Fila de Pedidos":
+    if st.session_state.pagina_chapa == "Fila de Pedidos":
             with st.container(border=True):
                 st.subheader("Fila de Pedidos da Cozinha e Expedição")
                 st.caption("Clique nos botões para avançar etapas ou cancelar (estorno)")
@@ -273,10 +394,101 @@ else:
                                     atualizar_status_pedido(p_id, "FINALIZADO")
                                     st.rerun()
 
-        elif st.session_state.pagina_chapa == "Controle de Estoque":
-            st.subheader("Controle de Estoque")
-            st.info("Tela em construção.")
+    elif st.session_state.pagina_chapa == "Controle de Estoque":
+            with st.container(border=True):
+                # Cabeçalho e Filtro por Alerta no canto superior direito
+                col_titulo, col_filtro = st.columns([3, 1])
+                with col_titulo:
+                    st.subheader("Controle e Reposição de Estoque")
+                with col_filtro:
+                    filtro_alerta = st.selectbox(
+                        "Filtrar por alerta",
+                        ["Todos", "OK", "ABAIXO DO MÍNIMO", "ESGOTADO"]
+                    )
 
-        elif st.session_state.pagina_chapa == "Cadastrar insumo":
+                # Caixa de Pesquisa
+                with st.container(border=True):
+                    busca = st.text_input("Pesquisar Insumo", placeholder="🔍 Digite o nome do ingrediente...")
+
+                st.write("")
+
+                # Cabeçalho da Tabela
+                h1, h2, h3, h4, h5, h6 = st.columns([2.2, 1.3, 0.9, 1.3, 1.6, 2.5])
+                h1.markdown("**Ingrediente**")
+                h2.markdown("**Quantidade atual**")
+                h3.markdown("**Unidade**")
+                h4.markdown("**Estoque mínimo**")
+                h5.markdown("**Alerta**")
+                h6.markdown("**Reposição de Estoque**")
+                st.divider()
+
+                insumos = buscar_insumos()
+                encontrou_algum = False
+
+                for item in insumos:
+                    i_id, nome_ing, qtd_atual, unidade, est_min = item
+
+                    # Calcula status do alerta automaticamente
+                    if qtd_atual <= 0:
+                        status_alerta = "ESGOTADO"
+                        cor_badge = "#FF4B4B"  # Vermelho
+                    elif qtd_atual < est_min:
+                        status_alerta = "ABAIXO DO MÍNIMO"
+                        cor_badge = "#6C757D"  # Cinza escuro
+                    else:
+                        status_alerta = "OK"
+                        cor_badge = "#A0A0A0"  # Cinza claro
+
+                    # Aplica filtros de pesquisa e alerta
+                    if busca and busca.lower() not in nome_ing.lower():
+                        continue
+                    if filtro_alerta != "Todos" and status_alerta != filtro_alerta:
+                        continue
+
+                    encontrou_algum = True
+
+                    # Formata números inteiros sem ".0" quando aplicável
+                    qtd_fmt = int(qtd_atual) if qtd_atual.is_integer() else qtd_atual
+                    min_fmt = int(est_min) if est_min.is_integer() else est_min
+
+                    # Linha do ingrediente
+                    c1, c2, c3, c4, c5, c6 = st.columns([2.2, 1.3, 0.9, 1.3, 1.6, 2.5], vertical_alignment="center")
+                    c1.write(f"**{nome_ing}**")
+                    c2.write(f"{qtd_fmt}")
+                    c3.write(unidade)
+                    c4.write(f"{min_fmt}")
+
+                    # Badge visual de Alerta
+                    c5.markdown(
+                        f"<div style='background-color: {cor_badge}; color: white; padding: 6px 10px; "
+                        f"border-radius: 12px; text-align: center; font-size: 12px; font-weight: bold;'>"
+                        f"{status_alerta}</div>",
+                        unsafe_allow_html=True
+                    )
+
+                    # Campo numérico + Botão REGISTRAR ENTRADA
+                    with c6:
+                        col_input, col_btn = st.columns([1, 1.4], vertical_alignment="center")
+                        qtd_entrada = col_input.number_input(
+                            "Qtd",
+                            min_value=0.0,
+                            step=1.0,
+                            key=f"input_est_{i_id}",
+                            label_visibility="collapsed"
+                        )
+                        if col_btn.button("REGISTRAR ENTRADA", key=f"btn_est_{i_id}", use_container_width=True):
+                            if qtd_entrada > 0:
+                                registrar_entrada_estoque(i_id, qtd_entrada)
+                                st.success(f"+{qtd_entrada:g} {unidade} em {nome_ing}")
+                                st.rerun()
+                            else:
+                                st.warning("Informe > 0")
+
+                    st.divider()
+
+                if not encontrou_algum:
+                    st.info("Nenhum insumo encontrado para os filtros selecionados.")
+
+    elif st.session_state.pagina_chapa == "Cadastrar insumo":
             st.subheader("Cadastrar Insumo")
             st.info("Tela em construção.")
