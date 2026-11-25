@@ -291,8 +291,7 @@ else:
         elif st.session_state.pagina_gerente == "Colaboradores":
             st.subheader("Gestão de Colaboradores")
             st.info("Tela de cadastro de novos usuários e alteração de senhas em construção.")
-
-    # ==========================================
+# ==========================================
     # PERFIL: CHAPA
     # ==========================================
     elif perfil == "Chapa":
@@ -318,7 +317,9 @@ else:
                 st.query_params.clear()  
                 st.rerun()
 
-        # Renderização das Telas da Chapa
+        # ------------------------------------------
+        # TELA 1: FILA DE PEDIDOS
+        # ------------------------------------------
         if st.session_state.pagina_chapa == "Fila de Pedidos":
             with st.container(border=True):
                 st.subheader("Fila de Pedidos da Cozinha e Expedição")
@@ -405,9 +406,12 @@ else:
                                     atualizar_status_pedido(p_id, "FINALIZADO")
                                     st.rerun()
 
+        # ------------------------------------------
+        # TELA 2: CONTROLE DE ESTOQUE
+        # ------------------------------------------
         elif st.session_state.pagina_chapa == "Controle de Estoque":
             with st.container(border=True):
-                col_titulo, col_filtro = st.columns([3, 1])
+                col_titulo, col_filtro = st.columns([3, 1], vertical_alignment="center")
                 with col_titulo:
                     st.subheader("Controle e Reposição de Estoque")
                 with col_filtro:
@@ -421,14 +425,30 @@ else:
 
                 st.write("")
 
-                h1, h2, h3, h4, h5, h6 = st.columns([2.2, 1.3, 0.9, 1.3, 1.6, 2.5])
-                h1.markdown("**Ingrediente**")
-                h2.markdown("**Quantidade atual**")
-                h3.markdown("**Unidade**")
-                h4.markdown("**Estoque mínimo**")
-                h5.markdown("**Alerta**")
-                h6.markdown("**Reposição de Estoque**")
-                st.divider()
+                proporcoes = [1.8, 1.2, 0.8, 1.2, 1.6, 2.8]
+
+                st.markdown("""
+                    <style>
+                        .titulo-coluna {
+                            font-size: 16px;
+                            font-weight: 800;
+                            color: var(--text-color);
+                            text-transform: uppercase;
+                            letter-spacing: 0.6px;
+                            padding-bottom: 8px;
+                            border-bottom: 2px solid #FF4B4B;
+                        }
+                    </style>
+                """, unsafe_allow_html=True)
+
+                h1, h2, h3, h4, h5, h6 = st.columns(proporcoes, vertical_alignment="center")
+                h1.markdown("<div class='titulo-coluna'>Ingrediente</div>", unsafe_allow_html=True)
+                h2.markdown("<div class='titulo-coluna' style='text-align: center;'>Qtd. Atual</div>", unsafe_allow_html=True)
+                h3.markdown("<div class='titulo-coluna' style='text-align: center;'>Unidade</div>", unsafe_allow_html=True)
+                h4.markdown("<div class='titulo-coluna' style='text-align: center;'>Estoque Mín.</div>", unsafe_allow_html=True)
+                h5.markdown("<div class='titulo-coluna' style='text-align: center;'>Alerta</div>", unsafe_allow_html=True)
+                h6.markdown("<div class='titulo-coluna' style='text-align: center;'>Reposição</div>", unsafe_allow_html=True)
+                st.write("")
 
                 insumos = buscar_insumos()
                 encontrou_algum = False
@@ -456,21 +476,21 @@ else:
                     qtd_fmt = int(qtd_atual) if qtd_atual.is_integer() else qtd_atual
                     min_fmt = int(est_min) if est_min.is_integer() else est_min
 
-                    c1, c2, c3, c4, c5, c6 = st.columns([2.2, 1.3, 0.9, 1.3, 1.6, 2.5], vertical_alignment="center")
-                    c1.write(f"**{nome_ing}**")
-                    c2.write(f"{qtd_fmt}")
-                    c3.write(unidade)
-                    c4.write(f"{min_fmt}")
+                    c1, c2, c3, c4, c5, c6 = st.columns(proporcoes, vertical_alignment="center")
+                    c1.markdown(f"**{nome_ing}**")
+                    c2.markdown(f"<div style='text-align: center;'>{qtd_fmt}</div>", unsafe_allow_html=True)
+                    c3.markdown(f"<div style='text-align: center;'>{unidade}</div>", unsafe_allow_html=True)
+                    c4.markdown(f"<div style='text-align: center;'>{min_fmt}</div>", unsafe_allow_html=True)
 
                     c5.markdown(
-                        f"<div style='background-color: {cor_badge}; color: white; padding: 6px 10px; "
+                        f"<div style='background-color: {cor_badge}; color: white; padding: 6px 8px; "
                         f"border-radius: 12px; text-align: center; font-size: 12px; font-weight: bold;'>"
                         f"{status_alerta}</div>",
                         unsafe_allow_html=True
                     )
 
                     with c6:
-                        col_input, col_btn = st.columns([1, 1.4], vertical_alignment="center")
+                        col_input, col_btn = st.columns([0.9, 1.6], vertical_alignment="center")
                         qtd_entrada = col_input.number_input(
                             "Qtd",
                             min_value=0.0,
@@ -478,7 +498,7 @@ else:
                             key=f"input_est_{i_id}",
                             label_visibility="collapsed"
                         )
-                        if col_btn.button("REGISTRAR ENTRADA", key=f"btn_est_{i_id}", use_container_width=True):
+                        if col_btn.button("REGISTRAR", key=f"btn_est_{i_id}", use_container_width=True):
                             if qtd_entrada > 0:
                                 registrar_entrada_estoque(i_id, qtd_entrada)
                                 st.success(f"+{qtd_entrada:g} {unidade} em {nome_ing}")
@@ -488,10 +508,12 @@ else:
 
                     st.divider()
 
-
                 if not encontrou_algum:
                     st.info("Nenhum insumo encontrado para os filtros selecionados.")
 
+        # ------------------------------------------
+        # TELA 3: CADASTRAR NOVO INSUMO
+        # ------------------------------------------
         elif st.session_state.pagina_chapa == "Cadastrar insumo":
             with st.container(border=True):
                 st.subheader("Cadastro de Novo Insumo")
@@ -543,7 +565,6 @@ else:
                                 st.warning("Por favor, preencha o Nome do Insumo.")
                             else:
                                 sigla_unidade = opcao_unidade.split("(")[1].replace(")", "")
-                                
                                 sucesso = cadastrar_novo_insumo(
                                     nome_insumo,
                                     sigla_unidade,
