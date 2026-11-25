@@ -145,6 +145,21 @@ def registrar_entrada_estoque(insumo_id, qtd_adicionar):
     conn.commit()
     conn.close()
 
+def cadastrar_novo_insumo(nome, unidade, qtd_inicial, estoque_minimo):
+    conn = sqlite3.connect("dragon_hot.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM insumos WHERE LOWER(nome) = LOWER(?)", (nome.strip(),))
+    if cursor.fetchone():
+        conn.close()
+        return False
+    cursor.execute("""
+        INSERT INTO insumos (nome, quantidade_atual, unidade, estoque_minimo)
+        VALUES (?, ?, ?, ?)
+    """, (nome.strip(), qtd_inicial, unidade, estoque_minimo))
+    conn.commit()
+    conn.close()
+    return True
+
 garantir_estoque_teste()
 
 # --- TELA DE LOGIN ---
@@ -188,8 +203,12 @@ else:
     perfil = st.session_state.usuario_logado["perfil"]
     nome = st.session_state.usuario_logado["nome"]
 
-    # Cabeçalho da Sidebar
-    imagem_sidebar = Image.open("imagens/logo_dragon.png.avif")
+    # Exibe a logo específica de cada perfil na sidebar
+    if perfil == "Gerente":
+        imagem_sidebar = Image.open("imagens/dragao_gerente.avif")
+    else:
+        imagem_sidebar = Image.open("imagens/dragao_cozinha.avif")
+
     col_esq, col_centro, col_dir = st.sidebar.columns([1, 2, 1])
     with col_centro:
         st.image(imagem_sidebar, use_container_width=True)
@@ -198,8 +217,7 @@ else:
     st.sidebar.caption(f"Perfil: **{perfil}**")
     st.sidebar.divider()
 
- 
-# ==========================================
+    # ==========================================
     # PERFIL: GERENTE
     # ==========================================
     if perfil == "Gerente":
@@ -229,14 +247,12 @@ else:
                 st.query_params.clear() 
                 st.rerun()
 
-        # --- TELA: DASHBOARD GERENCIAL ---
-            if st.session_state.pagina_gerente == "Dashboard":
-                st.title("Dashboard Gerencial")
-                st.caption("Visão geral do movimento e desempenho do Dragon-Hot")
+        # Renderização das Telas do Gerente
+        if st.session_state.pagina_gerente == "Dashboard":
+            st.title("Dashboard Gerencial")
+            st.caption("Visão geral do movimento e desempenho do Dragon-Hot")
 
-            # Exemplo de KPIs (Cards superiores)
             col1, col2, col3, col4 = st.columns(4)
-            
             with col1:
                 st.metric(label="Faturamento Hoje", value="R$ 1.240,00", delta="+12%")
             with col2:
@@ -249,7 +265,6 @@ else:
             st.divider()
 
             col_esq, col_dir = st.columns(2)
-            
             with col_esq:
                 with st.container(border=True):
                     st.subheader("📦 Pedidos por Status")
@@ -265,18 +280,15 @@ else:
                     st.write("2. Dog Tradicional (12 un)")
                     st.write("3. Dog Frango Catupiry (8 un)")
 
-        # --- TELA: CARDÁPIO ---
-    elif st.session_state.pagina_gerente == "Cardapio":
+        elif st.session_state.pagina_gerente == "Cardapio":
             st.subheader("Gestão de Cardápio")
             st.info("Tela de cadastro e edição de lanches e bebidas em construção.")
 
-        # --- TELA: BAIRROS ---
-    elif st.session_state.pagina_gerente == "Bairros":
+        elif st.session_state.pagina_gerente == "Bairros":
             st.subheader("Gestão de Bairros e Taxas de Entrega")
             st.info("Tela de taxas por bairro em construção.")
 
-        # --- TELA: COLABORADORES ---
-    elif st.session_state.pagina_gerente == "Colaboradores":
+        elif st.session_state.pagina_gerente == "Colaboradores":
             st.subheader("Gestão de Colaboradores")
             st.info("Tela de cadastro de novos usuários e alteração de senhas em construção.")
 
@@ -284,29 +296,30 @@ else:
     # PERFIL: CHAPA
     # ==========================================
     elif perfil == "Chapa":
-            if "pagina_chapa" not in st.session_state:
-                st.session_state.pagina_chapa = "Fila de Pedidos"
+        if "pagina_chapa" not in st.session_state:
+            st.session_state.pagina_chapa = "Fila de Pedidos"
 
-    with st.sidebar:
-            if st.button("Fila de Pedidos", type="primary" if st.session_state.pagina_chapa == "Fila de Pedidos" else "secondary", use_container_width=True):
+        with st.sidebar:
+            if st.button("Fila de Pedidos", type="primary" if st.session_state.pagina_chapa == "Fila de Pedidos" else "secondary", use_container_width=True, key="btn_chapa_fila"):
                 st.session_state.pagina_chapa = "Fila de Pedidos"
                 st.rerun()
                 
-            if st.button("Controle de Estoque", type="primary" if st.session_state.pagina_chapa == "Controle de Estoque" else "secondary", use_container_width=True):
+            if st.button("Controle de Estoque", type="primary" if st.session_state.pagina_chapa == "Controle de Estoque" else "secondary", use_container_width=True, key="btn_chapa_estoque"):
                 st.session_state.pagina_chapa = "Controle de Estoque"
                 st.rerun()
                 
-            if st.button("Cadastrar insumo", type="primary" if st.session_state.pagina_chapa == "Cadastrar insumo" else "secondary", use_container_width=True):
+            if st.button("Cadastrar insumo", type="primary" if st.session_state.pagina_chapa == "Cadastrar insumo" else "secondary", use_container_width=True, key="btn_chapa_cad_insumo"):
                 st.session_state.pagina_chapa = "Cadastrar insumo"
                 st.rerun()
 
             st.divider()
-            if st.button("Sair da Conta", use_container_width=True):
+            if st.button("Sair da Conta", use_container_width=True, key="btn_chapa_sair"):
                 st.session_state.usuario_logado = None
                 st.query_params.clear()  
                 st.rerun()
 
-    if st.session_state.pagina_chapa == "Fila de Pedidos":
+        # Renderização das Telas da Chapa
+        if st.session_state.pagina_chapa == "Fila de Pedidos":
             with st.container(border=True):
                 st.subheader("Fila de Pedidos da Cozinha e Expedição")
                 st.caption("Clique nos botões para avançar etapas ou cancelar (estorno)")
@@ -316,10 +329,8 @@ else:
             prontos = buscar_pedidos_por_status("PRONTO")
 
             if not recebidos and not em_preparo and not prontos:
-                st.markdown("**RECEBIDOS, PREPARO, ENTREGA**")
                 with st.container(border=True):
                     st.info("Nenhum pedido aguardando.\n\nChapa livre.\n\nNenhum pedido aguardando retirada.")
-            
             else:
                 st.markdown("**RECEBIDOS (AGUARDANDO ACEITE)**")
                 with st.container(border=True):
@@ -331,7 +342,7 @@ else:
                             with st.container(border=True):
                                 col_info, col_tag = st.columns([4, 1])
                                 col_info.markdown(f"#### {num}")
-                                col_tag.button(tipo, key=f"tag_{p_id}", disabled=True, use_container_width=True)
+                                col_tag.button(tipo, key=f"tag_rec_{p_id}", disabled=True, use_container_width=True)
                                 st.caption(f"{cliente} • {hora}")
                                 st.divider()
                                 
@@ -358,7 +369,7 @@ else:
                             with st.container(border=True):
                                 col_info, col_tag = st.columns([4, 1])
                                 col_info.markdown(f"#### {num}")
-                                col_tag.button(tipo, key=f"tag_{p_id}", disabled=True, use_container_width=True)
+                                col_tag.button(tipo, key=f"tag_prep_{p_id}", disabled=True, use_container_width=True)
                                 st.caption(f"{cliente} • {hora}")
                                 st.divider()
                                 
@@ -381,7 +392,7 @@ else:
                             with st.container(border=True):
                                 col_info, col_tag = st.columns([4, 1])
                                 col_info.markdown(f"#### {num}")
-                                col_tag.button(tipo, key=f"tag_{p_id}", disabled=True, use_container_width=True)
+                                col_tag.button(tipo, key=f"tag_pronto_{p_id}", disabled=True, use_container_width=True)
                                 st.caption(f"{cliente} • {hora}")
                                 st.divider()
                                 
@@ -394,9 +405,8 @@ else:
                                     atualizar_status_pedido(p_id, "FINALIZADO")
                                     st.rerun()
 
-    elif st.session_state.pagina_chapa == "Controle de Estoque":
+        elif st.session_state.pagina_chapa == "Controle de Estoque":
             with st.container(border=True):
-                # Cabeçalho e Filtro por Alerta no canto superior direito
                 col_titulo, col_filtro = st.columns([3, 1])
                 with col_titulo:
                     st.subheader("Controle e Reposição de Estoque")
@@ -406,13 +416,11 @@ else:
                         ["Todos", "OK", "ABAIXO DO MÍNIMO", "ESGOTADO"]
                     )
 
-                # Caixa de Pesquisa
                 with st.container(border=True):
                     busca = st.text_input("Pesquisar Insumo", placeholder="🔍 Digite o nome do ingrediente...")
 
                 st.write("")
 
-                # Cabeçalho da Tabela
                 h1, h2, h3, h4, h5, h6 = st.columns([2.2, 1.3, 0.9, 1.3, 1.6, 2.5])
                 h1.markdown("**Ingrediente**")
                 h2.markdown("**Quantidade atual**")
@@ -428,18 +436,16 @@ else:
                 for item in insumos:
                     i_id, nome_ing, qtd_atual, unidade, est_min = item
 
-                    # Calcula status do alerta automaticamente
                     if qtd_atual <= 0:
                         status_alerta = "ESGOTADO"
-                        cor_badge = "#FF4B4B"  # Vermelho
+                        cor_badge = "#FF4B4B"
                     elif qtd_atual < est_min:
                         status_alerta = "ABAIXO DO MÍNIMO"
-                        cor_badge = "#6C757D"  # Cinza escuro
+                        cor_badge = "#6C757D"
                     else:
                         status_alerta = "OK"
-                        cor_badge = "#A0A0A0"  # Cinza claro
+                        cor_badge = "#A0A0A0"
 
-                    # Aplica filtros de pesquisa e alerta
                     if busca and busca.lower() not in nome_ing.lower():
                         continue
                     if filtro_alerta != "Todos" and status_alerta != filtro_alerta:
@@ -447,18 +453,15 @@ else:
 
                     encontrou_algum = True
 
-                    # Formata números inteiros sem ".0" quando aplicável
                     qtd_fmt = int(qtd_atual) if qtd_atual.is_integer() else qtd_atual
                     min_fmt = int(est_min) if est_min.is_integer() else est_min
 
-                    # Linha do ingrediente
                     c1, c2, c3, c4, c5, c6 = st.columns([2.2, 1.3, 0.9, 1.3, 1.6, 2.5], vertical_alignment="center")
                     c1.write(f"**{nome_ing}**")
                     c2.write(f"{qtd_fmt}")
                     c3.write(unidade)
                     c4.write(f"{min_fmt}")
 
-                    # Badge visual de Alerta
                     c5.markdown(
                         f"<div style='background-color: {cor_badge}; color: white; padding: 6px 10px; "
                         f"border-radius: 12px; text-align: center; font-size: 12px; font-weight: bold;'>"
@@ -466,7 +469,6 @@ else:
                         unsafe_allow_html=True
                     )
 
-                    # Campo numérico + Botão REGISTRAR ENTRADA
                     with c6:
                         col_input, col_btn = st.columns([1, 1.4], vertical_alignment="center")
                         qtd_entrada = col_input.number_input(
@@ -486,9 +488,69 @@ else:
 
                     st.divider()
 
+
                 if not encontrou_algum:
                     st.info("Nenhum insumo encontrado para os filtros selecionados.")
 
-    elif st.session_state.pagina_chapa == "Cadastrar insumo":
-            st.subheader("Cadastrar Insumo")
-            st.info("Tela em construção.")
+        elif st.session_state.pagina_chapa == "Cadastrar insumo":
+            with st.container(border=True):
+                st.subheader("Cadastro de Novo Insumo")
+                st.divider()
+
+                with st.container(border=True):
+                    st.markdown("**Dados do Novo Ingrediente / Insumo**")
+                    st.write("")
+
+                    with st.form("form_cadastrar_insumo", clear_on_submit=True):
+                        nome_insumo = st.text_input(
+                            "Nome do Insumo *",
+                            placeholder="Ex: Salsicha Viena, Molho Barbecue, Bacon..."
+                        )
+
+                        col_unid, col_qtd = st.columns([1, 1.5])
+                        with col_unid:
+                            opcao_unidade = st.selectbox(
+                                "Unidade de Medida *",
+                                ["Unidade (UN)", "Gramas (G)", "Mililitros (ML)"]
+                            )
+                        with col_qtd:
+                            qtd_inicial = st.number_input(
+                                "Quantidade Inicial (Saldo Atual) *",
+                                min_value=0.0,
+                                step=1.0,
+                                value=0.0
+                            )
+
+                        st.write("")
+
+                        col_min, col_btn = st.columns([1.2, 1.3], vertical_alignment="bottom")
+                        with col_min:
+                            estoque_minimo = st.number_input(
+                                "Estoque Mínimo (Gatilho de Alerta) *",
+                                min_value=0.0,
+                                step=1.0,
+                                value=10.0
+                            )
+                        with col_btn:
+                            botao_salvar = st.form_submit_button(
+                                "SALVAR NOVO INSUMO",
+                                type="primary",
+                                use_container_width=True
+                            )
+
+                        if botao_salvar:
+                            if not nome_insumo.strip():
+                                st.warning("Por favor, preencha o Nome do Insumo.")
+                            else:
+                                sigla_unidade = opcao_unidade.split("(")[1].replace(")", "")
+                                
+                                sucesso = cadastrar_novo_insumo(
+                                    nome_insumo,
+                                    sigla_unidade,
+                                    qtd_inicial,
+                                    estoque_minimo
+                                )
+                                if sucesso:
+                                    st.success(f"Insumo '{nome_insumo.strip()}' cadastrado com sucesso! Já está disponível no Controle de Estoque.")
+                                else:
+                                    st.error("Já existe um insumo cadastrado com esse nome.")
