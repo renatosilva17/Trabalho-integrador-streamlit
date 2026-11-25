@@ -8,7 +8,6 @@ from PIL import Image
 if "usuario_logado" not in st.session_state:
     st.session_state.usuario_logado = None
 
-# ADICIONE ESTAS DUAS LINHAS AQUI EMBAIXO:
 if "pagina_gerente" not in st.session_state:
     st.session_state.pagina_gerente = "Dashboard"
 
@@ -29,12 +28,12 @@ if st.session_state.usuario_logado is None and "user" in st.query_params:
             "perfil": user_data[1]
         }
 
-# 3. Configuração da página (deve vir antes de qualquer elemento visual)
+# 3. Configuração da página
 layout_atual = "centered" if st.session_state.usuario_logado is None else "wide"
 
 st.set_page_config(
     page_title="Dragon-Hot — Acesso ao Sistema",
-    page_icon="magens/logo_dragon.png.png",
+    page_icon="imagens/logo_dragon.png.png",
     layout=layout_atual
 )
 
@@ -43,12 +42,10 @@ def verificar_credenciais(email, senha):
     conn = sqlite3.connect("dragon_hot.db")
     cursor = conn.cursor()
     senha_hash = hashlib.sha256(senha.encode('utf-8')).hexdigest()
-    
     cursor.execute("""
         SELECT nome, perfil FROM usuarios 
         WHERE email = ? AND senha_hash = ?
     """, (email, senha_hash))
-    
     usuario = cursor.fetchone()
     conn.close()
     return usuario
@@ -99,8 +96,6 @@ def garantir_pedidos_teste():
         """, pedidos_exemplo)
         conn.commit()
     conn.close()
-
-garantir_pedidos_teste()
 
 def garantir_estoque_teste():
     conn = sqlite3.connect("dragon_hot.db")
@@ -160,7 +155,208 @@ def cadastrar_novo_insumo(nome, unidade, qtd_inicial, estoque_minimo):
     conn.close()
     return True
 
+def garantir_cardapio_teste():
+    conn = sqlite3.connect("dragon_hot.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS cardapio (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            categoria TEXT NOT NULL,
+            preco REAL NOT NULL,
+            descricao TEXT,
+            ativo INTEGER DEFAULT 1
+        )
+    """)
+    cursor.execute("SELECT COUNT(*) FROM cardapio")
+    if cursor.fetchone()[0] == 0:
+        itens_exemplo = [
+            ("Dog Tradicional", "Lanches", 18.00, "Pão, 1 salsicha, purê, milho, ervilha, batata palha e molhos", 1),
+            ("Dog Duplo Prensado", "Lanches", 24.50, "Pão, 2 salsichas, purê, cheddar, bacon, batata palha e molhos", 1),
+            ("Dog Frango Catupiry", "Lanches", 26.00, "Pão, salsicha, frango desfiado, catupiry original e batata palha", 1),
+            ("Coca-Cola Lata 350ml", "Bebidas", 6.00, "Gelada", 1),
+            ("Porção de Batata Frita", "Porções", 15.00, "300g de batata crocante", 1)
+        ]
+        cursor.executemany("""
+            INSERT INTO cardapio (nome, categoria, preco, descricao, ativo)
+            VALUES (?, ?, ?, ?, ?)
+        """, itens_exemplo)
+        conn.commit()
+    conn.close()
+
+def buscar_cardapio():
+    conn = sqlite3.connect("dragon_hot.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, nome, categoria, preco, descricao, ativo FROM cardapio ORDER BY categoria, nome ASC")
+    itens = cursor.fetchall()
+    conn.close()
+    return itens
+
+def adicionar_item_cardapio(nome, categoria, preco, descricao):
+    conn = sqlite3.connect("dragon_hot.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO cardapio (nome, categoria, preco, descricao, ativo)
+        VALUES (?, ?, ?, ?, 1)
+    """, (nome, categoria, preco, descricao))
+    conn.commit()
+    conn.close()
+
+def atualizar_item_cardapio(item_id, novo_preco, ativo):
+    conn = sqlite3.connect("dragon_hot.db")
+    cursor = conn.cursor()
+    cursor.execute("UPDATE cardapio SET preco = ?, ativo = ? WHERE id = ?", (novo_preco, ativo, item_id))
+    conn.commit()
+    conn.close()
+
+def excluir_item_cardapio(item_id):
+    conn = sqlite3.connect("dragon_hot.db")
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM cardapio WHERE id = ?", (item_id,))
+    conn.commit()
+    conn.close()
+
+def garantir_bairros_teste():
+    conn = sqlite3.connect("dragon_hot.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS bairros (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            distancia_km REAL NOT NULL
+        )
+    """)
+    cursor.execute("SELECT COUNT(*) FROM bairros")
+    if cursor.fetchone()[0] == 0:
+        bairros_exemplo = [
+            ("Jandira", 11.2),
+            ("Jardim Gabriela", 1.4),
+            ("Jardim Renato", 6.0)
+        ]
+        cursor.executemany("""
+            INSERT INTO bairros (nome, distancia_km)
+            VALUES (?, ?)
+        """, bairros_exemplo)
+        conn.commit()
+    conn.close()
+
+def buscar_bairros():
+    conn = sqlite3.connect("dragon_hot.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, nome, distancia_km FROM bairros ORDER BY nome ASC")
+    lista = cursor.fetchall()
+    conn.close()
+    return lista
+
+def adicionar_bairro(nome, distancia_km):
+    conn = sqlite3.connect("dragon_hot.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM bairros WHERE LOWER(nome) = LOWER(?)", (nome.strip(),))
+    if cursor.fetchone():
+        conn.close()
+        return False
+    cursor.execute("INSERT INTO bairros (nome, distancia_km) VALUES (?, ?)", (nome.strip(), distancia_km))
+    conn.commit()
+    conn.close()
+    return True
+
+def atualizar_bairro(bairro_id, novo_nome, nova_distancia):
+    conn = sqlite3.connect("dragon_hot.db")
+    cursor = conn.cursor()
+    cursor.execute("UPDATE bairros SET nome = ?, distancia_km = ? WHERE id = ?", (novo_nome.strip(), nova_distancia, bairro_id))
+    conn.commit()
+    conn.close()
+
+def excluir_bairro(bairro_id):
+    conn = sqlite3.connect("dragon_hot.db")
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM bairros WHERE id = ?", (bairro_id,))
+    conn.commit()
+    conn.close()
+
+def buscar_usuarios():
+    conn = sqlite3.connect("dragon_hot.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, nome, email, perfil, secao, foto FROM usuarios ORDER BY nome ASC")
+    lista = cursor.fetchall()
+    conn.close()
+    return lista
+
+def cadastrar_usuario(nome, email, senha, perfil, secao, foto):
+    conn = sqlite3.connect("dragon_hot.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM usuarios WHERE email = ?", (email.strip(),))
+    if cursor.fetchone():
+        conn.close()
+        return False
+    senha_hash = hashlib.sha256(senha.encode('utf-8')).hexdigest()
+    cursor.execute("""
+        INSERT INTO usuarios (nome, email, senha_hash, perfil, secao, foto)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (nome.strip(), email.strip(), senha_hash, perfil, secao, foto))
+    conn.commit()
+    conn.close()
+    return True
+
+def excluir_usuario(user_id):
+    conn = sqlite3.connect("dragon_hot.db")
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM usuarios WHERE id = ?", (user_id,))
+    conn.commit()
+    conn.close()
+
+def atualizar_usuario(user_id, novo_nome, novo_email, novo_perfil, nova_secao, nova_foto):
+    conn = sqlite3.connect("dragon_hot.db")
+    cursor = conn.cursor()
+    # Verifica se o e-mail já pertence a outro usuário
+    cursor.execute("SELECT id FROM usuarios WHERE email = ? AND id != ?", (novo_email.strip(), user_id))
+    if cursor.fetchone():
+        conn.close()
+        return False
+    cursor.execute("""
+        UPDATE usuarios 
+        SET nome = ?, email = ?, perfil = ?, secao = ?, foto = ?
+        WHERE id = ?
+    """, (novo_nome.strip(), novo_email.strip(), novo_perfil, nova_secao, nova_foto, user_id))
+    conn.commit()
+    conn.close()
+    return True
+
+def garantir_usuarios_teste():
+    conn = sqlite3.connect("dragon_hot.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            senha_hash TEXT NOT NULL,
+            perfil TEXT NOT NULL,
+            secao TEXT DEFAULT 'Geral',
+            foto TEXT DEFAULT 'dragao_gerente.avif'
+        )
+    """)
+    cursor.execute("SELECT COUNT(*) FROM usuarios")
+    if cursor.fetchone()[0] == 0:
+        senha_gerente = hashlib.sha256("admin123".encode('utf-8')).hexdigest()
+        senha_chapa = hashlib.sha256("chapa123".encode('utf-8')).hexdigest()
+        usuarios_exemplo = [
+            ("Carlos Gerente", "gerente@dragonhot.com", senha_gerente, "Gerente", "Administração", "dragao_gerente.avif"),
+            ("João Cozinha", "chapa@dragonhot.com", senha_chapa, "Chapa", "Cozinha / Chapa", "dragao_cozinha.avif")
+        ]
+        cursor.executemany("""
+            INSERT INTO usuarios (nome, email, senha_hash, perfil, secao, foto)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, usuarios_exemplo)
+        conn.commit()
+    conn.close()
+
+# Inicializa todas as tabelas de exemplo (Ordem correta)
+garantir_usuarios_teste()
+garantir_pedidos_teste()
 garantir_estoque_teste()
+garantir_cardapio_teste()
+garantir_bairros_teste()
 
 # --- TELA DE LOGIN ---
 if st.session_state.usuario_logado is None:
@@ -203,7 +399,6 @@ else:
     perfil = st.session_state.usuario_logado["perfil"]
     nome = st.session_state.usuario_logado["nome"]
 
-    # Exibe a logo específica de cada perfil na sidebar
     if perfil == "Gerente":
         imagem_sidebar = Image.open("imagens/dragao_gerente.avif")
     else:
@@ -247,7 +442,9 @@ else:
                 st.query_params.clear() 
                 st.rerun()
 
-        # Renderização das Telas do Gerente
+        # ------------------------------------------
+        # TELA 1: DASHBOARD
+        # ------------------------------------------
         if st.session_state.pagina_gerente == "Dashboard":
             st.title("Dashboard Gerencial")
             st.caption("Visão geral do movimento e desempenho do Dragon-Hot")
@@ -280,18 +477,273 @@ else:
                     st.write("2. Dog Tradicional (12 un)")
                     st.write("3. Dog Frango Catupiry (8 un)")
 
+        # ------------------------------------------
+        # TELA 2: GESTÃO DE CARDÁPIO
+        # ------------------------------------------
         elif st.session_state.pagina_gerente == "Cardapio":
-            st.subheader("Gestão de Cardápio")
-            st.info("Tela de cadastro e edição de lanches e bebidas em construção.")
+            st.title("🍔 Gestão de Cardápio")
+            st.caption("Cadastre novos produtos, ajuste preços ou pause itens indisponíveis")
 
+            with st.expander("➕ Cadastrar Novo Item no Cardápio", expanded=False):
+                with st.form("form_novo_item_cardapio", clear_on_submit=True):
+                    col1, col2, col3 = st.columns([2, 1, 1])
+                    novo_nome = col1.text_input("Nome do Produto *", placeholder="Ex: Dog Bacon Especial")
+                    nova_cat = col2.selectbox("Categoria", ["Lanches", "Bebidas", "Porções", "Adicionais"])
+                    novo_preco = col3.number_input("Preço (R$) *", min_value=0.0, step=0.50, format="%.2f")
+                    
+                    nova_desc = st.text_area("Ingredientes / Descrição", placeholder="Ex: Pão, 2 salsichas, bacon crocante, cheddar...")
+                    
+                    if st.form_submit_button("Salvar Produto", type="primary", use_container_width=True):
+                        if novo_nome.strip() and novo_preco > 0:
+                            adicionar_item_cardapio(novo_nome.strip(), nova_cat, novo_preco, nova_desc.strip())
+                            st.success(f"'{novo_nome}' adicionado ao cardápio!")
+                            st.rerun()
+                        else:
+                            st.warning("Preencha o nome do produto e um preço maior que zero.")
+
+            st.divider()
+
+            col_busca, col_cat = st.columns([3, 1])
+            busca_card = col_busca.text_input("🔍 Buscar item", placeholder="Digite o nome do lanche ou bebida...")
+            filtro_cat = col_cat.selectbox("Filtrar Categoria", ["Todas", "Lanches", "Bebidas", "Porções", "Adicionais"])
+
+            st.write("")
+
+            itens_cardapio = buscar_cardapio()
+            encontrou = False
+
+            if not itens_cardapio:
+                st.info("Nenhum item cadastrado no cardápio ainda.")
+            else:
+                for item in itens_cardapio:
+                    c_id, c_nome, c_cat, c_preco, c_desc, c_ativo = item
+
+                    if busca_card and busca_card.lower() not in c_nome.lower():
+                        continue
+                    if filtro_cat != "Todas" and c_cat != filtro_cat:
+                        continue
+
+                    encontrou = True
+
+                    with st.container(border=True):
+                        col_info, col_preco, col_status, col_acoes = st.columns([3, 1.3, 1.2, 1.3], vertical_alignment="center")
+                        
+                        with col_info:
+                            status_txt = "" if c_ativo else " *(Pausado)*"
+                            st.markdown(f"**{c_nome}** `{c_cat}`{status_txt}")
+                            if c_desc:
+                                st.caption(c_desc)
+
+                        with col_preco:
+                            preco_editado = st.number_input(
+                                "Preço",
+                                min_value=0.0,
+                                value=float(c_preco),
+                                step=0.50,
+                                format="%.2f",
+                                key=f"preco_card_{c_id}",
+                                label_visibility="collapsed"
+                            )
+
+                        with col_status:
+                            ativo_editado = st.toggle("Disponível", value=bool(c_ativo), key=f"ativo_card_{c_id}")
+
+                        with col_acoes:
+                            b_save, b_del = st.columns(2)
+                            if b_save.button("💾", key=f"save_card_{c_id}", help="Salvar alterações", use_container_width=True):
+                                atualizar_item_cardapio(c_id, preco_editado, int(ativo_editado))
+                                st.toast(f"{c_nome} atualizado!", icon="✅")
+                                st.rerun()
+                            if b_del.button("🗑️", key=f"del_card_{c_id}", help="Excluir item", use_container_width=True):
+                                excluir_item_cardapio(c_id)
+                                st.toast(f"{c_nome} removido!", icon="🗑️")
+                                st.rerun()
+
+                if not encontrou:
+                    st.info("Nenhum item encontrado com os filtros atuais.")
+
+        # ------------------------------------------
+        # TELA 3: GESTÃO DE BAIRROS
+        # ------------------------------------------
         elif st.session_state.pagina_gerente == "Bairros":
-            st.subheader("Gestão de Bairros e Taxas de Entrega")
-            st.info("Tela de taxas por bairro em construção.")
+            @st.dialog("Cadastrar Bairro")
+            def modal_cadastrar_bairro():
+                with st.form("form_novo_bairro", clear_on_submit=True):
+                    nome_b = st.text_input("Nome do Bairro", placeholder="Nome:")
+                    dist_b = st.number_input("Distância (km)", min_value=0.1, step=0.1, value=1.0, format="%.1f")
+                    st.write("")
+                    if st.form_submit_button("Adicionar", type="primary", use_container_width=True):
+                        if not nome_b.strip():
+                            st.warning("Informe o nome do bairro.")
+                        else:
+                            if adicionar_bairro(nome_b, dist_b):
+                                st.rerun()
+                            else:
+                                st.error("Este bairro já está cadastrado.")
 
+            @st.dialog("Editar Bairro")
+            def modal_editar_bairro(b_id, nome_atual, dist_atual):
+                with st.form(f"form_edit_bairro_{b_id}"):
+                    novo_nome = st.text_input("Novo nome", value=nome_atual, placeholder="Nome:")
+                    nova_dist = st.number_input("Distância (km)", min_value=0.1, step=0.1, value=float(dist_atual), format="%.1f")
+                    st.write("")
+                    if st.form_submit_button("Salvar", type="primary", use_container_width=True):
+                        if not novo_nome.strip():
+                            st.warning("Informe o nome do bairro.")
+                        else:
+                            atualizar_bairro(b_id, novo_nome, nova_dist)
+                            st.rerun()
+
+            col_topo_esq, col_topo_dir = st.columns([3, 1], vertical_alignment="center")
+            with col_topo_esq:
+                st.markdown(f"### 👤 Olá, {nome}!")
+            with col_topo_dir:
+                st.markdown("<div style='text-align: right; color: gray;'>Painel administrativo</div>", unsafe_allow_html=True)
+
+            st.caption("Gerencie os Bairros")
+            st.write("")
+
+            bairros = buscar_bairros()
+
+            if not bairros:
+                st.info("Nenhum bairro cadastrado no momento.")
+            else:
+                for b_id, b_nome, b_dist in bairros:
+                    dist_fmt = f"{b_dist:.1f}".replace(".", ",") + " km"
+
+                    with st.container(border=True):
+                        c_info, c_editar, c_excluir = st.columns([4, 1, 1], vertical_alignment="center")
+                        with c_info:
+                            st.markdown(f"#### {b_nome}")
+                            st.caption(dist_fmt)
+                        with c_editar:
+                            if st.button("Editar", key=f"edit_bairro_{b_id}", use_container_width=True):
+                                modal_editar_bairro(b_id, b_nome, b_dist)
+                        with c_excluir:
+                            if st.button("Excluir", key=f"del_bairro_{b_id}", use_container_width=True):
+                                excluir_bairro(b_id)
+                                st.rerun()
+
+            st.write("")
+
+            col_vazia1, col_btn_add, col_vazia2 = st.columns([1.5, 1, 1.5])
+            with col_btn_add:
+                if st.button("➕ Adicionar Bairro", use_container_width=True):
+                    modal_cadastrar_bairro()
+
+        # ------------------------------------------
+        # TELA 4: COLABORADORES
+        # ------------------------------------------
+        # ------------------------------------------
+        # TELA 4: COLABORADORES
+        # ------------------------------------------
         elif st.session_state.pagina_gerente == "Colaboradores":
-            st.subheader("Gestão de Colaboradores")
-            st.info("Tela de cadastro de novos usuários e alteração de senhas em construção.")
-# ==========================================
+            @st.dialog("Cadastrar Novo Colaborador")
+            def modal_cadastrar_colaborador():
+                with st.form("form_novo_colaborador", clear_on_submit=True):
+                    nome_c = st.text_input("Nome Completo *", placeholder="Ex: Roberto Lima")
+                    email_c = st.text_input("E-mail (Acesso) *", placeholder="roberto@dragonhot.com")
+                    senha_c = st.text_input("Senha Temporária *", type="password", placeholder="******")
+                    
+                    col_p1, col_p2 = st.columns(2)
+                    with col_p1:
+                        perfil_c = st.selectbox("Perfil de Acesso *", ["Gerente", "Chapa"])
+                    with col_p2:
+                        secao_c = st.selectbox("Seção / Setor *", ["Cozinha / Chapa", "Administração", "Atendimento", "Expedição/Delivery"])
+
+                    foto_c = st.selectbox("Avatar / Ícone", ["dragao_gerente.avif", "dragao_cozinha.avif"])
+                    
+                    st.write("")
+                    if st.form_submit_button("Salvar Colaborador", type="primary", use_container_width=True):
+                        if not nome_c.strip() or not email_c.strip() or not senha_c.strip():
+                            st.warning("Preencha todos os campos obrigatórios.")
+                        else:
+                            sucesso = cadastrar_usuario(nome_c, email_c, senha_c, perfil_c, secao_c, foto_c)
+                            if sucesso:
+                                st.success(f"Colaborador '{nome_c}' cadastrado com sucesso!")
+                                st.rerun()
+                            else:
+                                st.error("Já existe um colaborador cadastrado com este e-mail.")
+
+            @st.dialog("Editar Colaborador")
+            def modal_editar_colaborador(u_id, nome_atual, email_atual, perfil_atual, secao_atual, foto_atual):
+                with st.form(f"form_edit_colaborador_{u_id}"):
+                    novo_nome = st.text_input("Nome Completo *", value=nome_atual)
+                    novo_email = st.text_input("E-mail (Acesso) *", value=email_atual)
+                    
+                    opcoes_perfis = ["Gerente", "Chapa"]
+                    idx_perfil = opcoes_perfis.index(perfil_atual) if perfil_atual in opcoes_perfis else 0
+
+                    opcoes_secoes = ["Cozinha / Chapa", "Administração", "Atendimento", "Expedição/Delivery"]
+                    idx_secao = opcoes_secoes.index(secao_atual) if secao_atual in opcoes_secoes else 0
+
+                    opcoes_fotos = ["dragao_gerente.avif", "dragao_cozinha.avif"]
+                    idx_foto = opcoes_fotos.index(foto_atual) if foto_atual in opcoes_fotos else 0
+
+                    col_p1, col_p2 = st.columns(2)
+                    with col_p1:
+                        novo_perfil = st.selectbox("Perfil de Acesso *", opcoes_perfis, index=idx_perfil)
+                    with col_p2:
+                        nova_secao = st.selectbox("Seção / Setor *", opcoes_secoes, index=idx_secao)
+
+                    nova_foto = st.selectbox("Avatar / Ícone", opcoes_fotos, index=idx_foto)
+                    
+                    st.write("")
+                    if st.form_submit_button("Salvar Alterações", type="primary", use_container_width=True):
+                        if not novo_nome.strip() or not novo_email.strip():
+                            st.warning("Preencha os campos obrigatórios.")
+                        else:
+                            sucesso = atualizar_usuario(u_id, novo_nome, novo_email, novo_perfil, nova_secao, nova_foto)
+                            if sucesso:
+                                st.toast("Colaborador atualizado com sucesso!", icon="✅")
+                                st.rerun()
+                            else:
+                                st.error("Este e-mail já está sendo usado por outro colaborador.")
+
+            st.title("👥 Gestão de Colaboradores")
+            st.caption("Cadastre funcionários, defina perfis de acesso, setores e avatares")
+
+            col_topo1, col_topo2 = st.columns([3, 1])
+            with col_topo2:
+                if st.button("➕ Novo Colaborador", type="primary", use_container_width=True):
+                    modal_cadastrar_colaborador()
+
+            st.divider()
+
+            usuarios = buscar_usuarios()
+
+            if not usuarios:
+                st.info("Nenhum colaborador cadastrado.")
+            else:
+                for u_id, u_nome, u_email, u_perfil, u_secao, u_foto in usuarios:
+                    with st.container(border=True):
+                        c_img, c_info, c_editar, c_acoes = st.columns([0.8, 3.2, 1, 1], vertical_alignment="center")
+                        
+                        with c_img:
+                            try:
+                                img_avatar = Image.open(f"imagens/{u_foto}")
+                                st.image(img_avatar, width=60)
+                            except:
+                                st.write("👤")
+
+                        with c_info:
+                            st.markdown(f"**{u_nome}** (`{u_perfil}`)")
+                            st.caption(f"📧 {u_email}  |  🏷️ Seção: **{u_secao}**")
+
+                        with c_editar:
+                            if st.button("✏️ Editar", key=f"edit_user_{u_id}", use_container_width=True):
+                                modal_editar_colaborador(u_id, u_nome, u_email, u_perfil, u_secao, u_foto)
+
+                        with c_acoes:
+                            if u_email != st.session_state.usuario_logado.get("email"):
+                                if st.button("🗑️ Excluir", key=f"del_user_{u_id}", use_container_width=True):
+                                    excluir_usuario(u_id)
+                                    st.toast(f"Colaborador {u_nome} removido!", icon="🗑️")
+                                    st.rerun()
+                            else:
+                                st.caption("*(Conta Atual)*")
+
+    # ==========================================
     # PERFIL: CHAPA
     # ==========================================
     elif perfil == "Chapa":
