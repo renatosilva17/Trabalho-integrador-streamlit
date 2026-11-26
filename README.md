@@ -1,7 +1,5 @@
 <div align="center">
-  <a href="https://git.io/typing-svg">
-    <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=32&pause=1000&color=FF4500&center=true&vCenter=true&width=600&lines=%F0%9F%8C%AD+Dragon-Hot+%E2%80%94+Projeto+Integrado" alt="Dragon-Hot — Projeto Integrado" />
-  </a>
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=2,12,20&height=180&section=header&text=🌭%20Dragon-Hot&fontSize=55&fontColor=fff&animation=fadeIn&fontAlignY=38&desc=Projeto%20Integrado&descAlignY=60&descSize=22" width="100%"/>
 </div>
 
 <p align="center">
