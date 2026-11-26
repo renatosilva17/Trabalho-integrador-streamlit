@@ -37,7 +37,7 @@
 | **Requisitos Não Funcionais** | Gabriela e Renato | [📄 Acessar](https://docs.google.com/document/d/14P544X3pLRtalhM8U4i4vIZstDsDt-k7/edit) |
 | **Requisitos e Regras de Negócio** | Gabriela | [📄 Acessar](https://docs.google.com/document/d/1HHGWG_VOe3tcnupIIlNchhPKaRdFLCrpQ4V8ZPqVcmU/edit?tab=t.0#heading=h.jiv21hifzhdq) |
 | **Requisitos de Infraestrutura** | Renato | [📄 Acessar](https://docs.google.com/document/d/1cimw1cw9G9grL96yfbMWcyu3i-yX7kPy/edit) |
-| **Relatório de Infraestrutura** |  | *Em breve* |
+| **Relatório de Infraestrutura** | Gabriela | *Em breve* |
 
 ## 🚀 Funcionalidades do Sistema
 
