@@ -1,4 +1,4 @@
-##     🌭 Dragon-Hot — Projeto Integrado
+##    <center> 🌭 Dragon-Hot — Projeto Integrado </center>
 
 <p align="center">
   <img src="imagens/dragao_eating.gif" width="400" alt="Demonstração do Sistema">
