@@ -40,11 +40,12 @@
   * Fila de pedidos em tempo real (*Recebidos*, *Em Preparo*, *Pronto/Entrega*).
   * Controle de estoque de insumos e estorno automático em caso de cancelamento.
  
+
 ## 📸 Telas do Sistema
 
 | Tela de Login | Dashboard Gerencial | Fila da Cozinha |
 | :---: | :---: | :---: |
-| <img src="imagens/print_login.png" width="250"> | <img src="imagens/print_gerente.png" width="250"> | <img src="imagens/print_chapa.png" width="250"> |
+| <img src="imagens/tela_login.png" width="250"> | <img src="imagens/tela_dashboard.png" width="250"> | <img src="imagens/tela_cozinha.png" width="250"> |
 
 ### 👥 Equipe do Projeto
 
