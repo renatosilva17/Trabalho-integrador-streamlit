@@ -49,6 +49,8 @@
 ### 👥 Equipe do Projeto
 
 | Contribuidor | Perfil | Contribuidor | Perfil | Contribuidor | Perfil |
+| :---: | :---: | :---: | :---: | :---: | :---: |
+| <img src="https://github.com/Lucasrnlc.png" width="80" height="80" style="border-radius:50%;"> | [Lucasrnlc](https://github.com/Lucasrnlc) | <img src="https://github.com/agabrielabatista.png" width="80" height="80" style="border-radius:50%;"> | [agabrielabatista](https://github.com/agabrielabatista) | <img src="https://github.com/renatosilva17.png" width="80" height="80" style="border-radius:50%;"> | [renatosilva17](https://github.com/renatosilva17) |
 
 
 # Entregas de Atividades
@@ -65,5 +67,3 @@
 *Requisitos Funcionais:* https://docs.google.com/document/d/1jfzipSZ4cObNCC-chNFojDm3bddYiR9R1Cq9d_xu_BM/edit?tab=t.0
 
 *Requisitos Não Funcionais:* https://docs.google.com/document/d/14P544X3pLRtalhM8U4i4vIZstDsDt-k7/edit
-| :---: | :---: | :---: | :---: | :---: | :---: |
-| <img src="https://github.com/Lucasrnlc.png" width="80" height="80" style="border-radius:50%;"> | [Lucasrnlc](https://github.com/Lucasrnlc) | <img src="https://github.com/agabrielabatista.png" width="80" height="80" style="border-radius:50%;"> | [agabrielabatista](https://github.com/agabrielabatista) | <img src="https://github.com/renatosilva17.png" width="80" height="80" style="border-radius:50%;"> | [renatosilva17](https://github.com/renatosilva17) |
