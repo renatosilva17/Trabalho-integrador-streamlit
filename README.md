@@ -24,10 +24,6 @@
 * **Requisitos e Regras de Negócio:** [Acessar Documento](https://docs.google.com/document/d/1HHGWG_VOe3tcnupIIlNchhPKaRdFLCrpQ4V8ZPqVcmU/edit?tab=t.0#heading=h.jiv21hifzhdq)
 * **Requisitos de Infraestrutura:** [Acessar Documento](https://docs.google.com/document/d/1cimw1cw9G9grL96yfbMWcyu3i-yX7kPy/edit)
 
- <p align="center">
-  <img src="imagens/dragao_eating.gif" width="400" alt="Demonstração do Sistema">
-</p>
-
 ### 👥 Equipe do Projeto
 
 | Contribuidor | Perfil | Contribuidor | Perfil | Contribuidor | Perfil |
