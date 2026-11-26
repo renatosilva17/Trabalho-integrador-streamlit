@@ -49,5 +49,21 @@
 ### 👥 Equipe do Projeto
 
 | Contribuidor | Perfil | Contribuidor | Perfil | Contribuidor | Perfil |
+
+
+# Entregas de Atividades
+
+
+*Definição de Nicho e Escopo:* https://docs.google.com/document/d/1ZdYS0LZ1-4I7yzn2-JAly8MSa3qtClPNHVjZS0THHMI/edit?tab=t.0#heading=h.64gcyo8p9w3
+
+*Documento de visão:* https://docs.google.com/document/d/1AMXfXL_l_vDicBCOAGDvmNjXV349T1YXpS_BKX4R5y8/edit?tab=t.0
+
+*Cronograma:* https://docs.google.com/document/d/1ujDivRhg49LPxq5hQFR7H3wofu4VHPn5gDU23Cd8vgA/edit?tab=t.0#heading=h.jpc9ralkrmrx
+
+*Wireframe:* https://docs.google.com/document/d/1H_MTNMHQHBBLK6QKKs574K75FUKD3vdNpQEM8Fk1u20/edit?tab=t.o4rsedesotd6
+
+*Requisitos Funcionais:* https://docs.google.com/document/d/1jfzipSZ4cObNCC-chNFojDm3bddYiR9R1Cq9d_xu_BM/edit?tab=t.0
+
+*Requisitos Não Funcionais:* https://docs.google.com/document/d/14P544X3pLRtalhM8U4i4vIZstDsDt-k7/edit
 | :---: | :---: | :---: | :---: | :---: | :---: |
 | <img src="https://github.com/Lucasrnlc.png" width="80" height="80" style="border-radius:50%;"> | [Lucasrnlc](https://github.com/Lucasrnlc) | <img src="https://github.com/agabrielabatista.png" width="80" height="80" style="border-radius:50%;"> | [agabrielabatista](https://github.com/agabrielabatista) | <img src="https://github.com/renatosilva17.png" width="80" height="80" style="border-radius:50%;"> | [renatosilva17](https://github.com/renatosilva17) |
