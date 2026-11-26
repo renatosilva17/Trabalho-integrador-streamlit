@@ -1,5 +1,6 @@
-> [!IMPORTANT]
-> # 🌭 Dragon-Hot — Projeto Integrado
+<div align="center">
+  <img src="https://img.shields.io/badge/🌭_Dragon--Hot-Projeto_Integrado-FF4500?style=for-the-badge&labelColor=1a1a1a" alt="Dragon-Hot" />
+</div>
 
 <p align="center">
   <img src="imagens/dragao_eating.gif" width="400" alt="Demonstração do Sistema">
