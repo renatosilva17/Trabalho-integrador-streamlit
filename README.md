@@ -1,5 +1,7 @@
 <div align="center">
-  <img src="https://img.shields.io/badge/🌭_Dragon--Hot-Projeto_Integrado-FF4500?style=for-the-badge&labelColor=1a1a1a" alt="Dragon-Hot" />
+  <a href="https://git.io/typing-svg">
+    <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=32&pause=1000&color=FF4500&center=true&vCenter=true&width=600&lines=%F0%9F%8C%AD+Dragon-Hot+%E2%80%94+Projeto+Integrado" alt="Dragon-Hot — Projeto Integrado" />
+  </a>
 </div>
 
 <p align="center">
